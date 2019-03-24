@@ -24,6 +24,13 @@ jdb_log_level = ARGUMENTS.get( "ll", 0 )
 common_env.Append(CXXFLAGS 		= "-DJDB_LOG_LEVEL=" + str(jdb_log_level) )
 target = common_env.StaticLibrary( target='TaskEngine', source=[ Glob( "*.cpp" ) ] )
 
+# Install the Header files and lib file:
+install = [
+    common_env.Install( '/usr/local/include/TaskEngine/', [Glob("*.h")] ),
+    common_env.Install( '/usr/local/lib', [Glob("*.a")] ) 
+]
+
+
 # set as the default target
-Default( target )
+Default( target, install )
 
