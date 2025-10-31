@@ -1,24 +1,18 @@
-cmake_minimum_required(VERSION 3.10)
-project(TaskEngine)
+# Sources: list explicitly (recommended) or use a glob if you prefer
+file( GLOB XMLCONFIG_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/*.cpp")
+file( GLOB XMLCONFIG_HEADERS "${CMAKE_CURRENT_SOURCE_DIR}/*.h" )
 
-# If ../XmlConfig is a CMake project that defines a target named XmlConfig:
-# add_subdirectory(${CMAKE_SOURCE_DIR}/../XmlConfig ${CMAKE_BINARY_DIR}/XmlConfig_build)
 
-add_library(TaskEngine SHARED TaskEngine.cpp TaskFactory.cpp)
+# OBJECT library (used to compose the combined lib)
+add_library(TaskEngine_obj OBJECT ${XMLCONFIG_SOURCES} ${XMLCONFIG_HEADERS})
+target_include_directories(TaskEngine_obj PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ ${CMAKE_SOURCE_DIR}/ )
+target_link_libraries(TaskEngine_obj PUBLIC XmlConfig)
 
-target_compile_options(TaskEngine PRIVATE "-m32")
-target_link_libraries(TaskEngine PRIVATE "-m32")
-
-# find_library(XMLCONFIG_LIB
-#     NAMES XMLConfig
-#     HINTS ${CMAKE_SOURCE_DIR}/../XmlConfig/build ${CMAKE_SOURCE_DIR}/XmlConfig/build
-#     NO_DEFAULT_PATH
-# )
-# message(STATUS "Found XmlConfig: ${XMLCONFIG_LIB}")
-# target_link_libraries(TaskEngine PRIVATE ${XMLCONFIG_LIB})
-
-target_include_directories(TaskEngine PRIVATE
-  ${CMAKE_SOURCE_DIR}/XmlConfig
-  ${CMAKE_SOURCE_DIR}/
-)
-set_property(TARGET TaskEngine PROPERTY CXX_STANDARD 11)
+# Actual library for this component
+if(BUILD_SHARED_LIBS)
+  add_library(TaskEngine SHARED $<TARGET_OBJECTS:TaskEngine_obj>)
+else()
+  add_library(TaskEngine STATIC $<TARGET_OBJECTS:TaskEngine_obj>)
+endif()
+target_include_directories(TaskEngine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/ ${CMAKE_SOURCE_DIR}/)
+target_link_libraries(TaskEngine PUBLIC XmlConfig)
